@@ -1,393 +1,240 @@
-# 📘 Day 5 – Advanced Git Concepts, Branching Strategies & Industry Best Practices
+# Day 5 - Advanced Git, Branching Strategies & Industry Best Practices
+
+> **Goal of today:** learn how *real companies* organize their Git work - the workflows, releases, and habits that keep large teams shipping safely.
+
+---
 
 ## Objective of Day 5
 
-By the end of this session, students will:
-
-* Understand enterprise Git workflows
-* Apply professional branching strategies
-* Manage releases and hotfixes
-* Maintain clean repositories
-* Use Git in CI/CD pipelines
-* Follow best practices used in companies
+By the end you will be able to:
+- Compare **GitHub Flow** and **GitFlow** and pick the right one
+- Manage **releases** and **hotfixes**
+- Use **tags** and **semantic versioning**
+- Understand how Git triggers **CI/CD**
+- Apply professional **repository hygiene**
 
 ---
 
 ## 1. Team-Based Feature Branch Workflow
 
----
+In real teams, many developers work at once. The shared rule: **nobody commits directly to `main`.** Everyone branches, then merges back through a reviewed **Pull Request**.
 
-### What is Team-Based Feature Branch Workflow?
-
-This is the most commonly used workflow in companies.
-
-Each developer:
-
-* Creates feature branch
-* Develops independently
-* Creates Pull Request
-* Merges into main
-
----
-
-### Workflow Diagram
-
-```
-main
-  \
-   feature-login
-   feature-payment
+```mermaid
+gitGraph
+    commit
+    branch feature-A
+    branch feature-B
+    checkout feature-A
+    commit
+    checkout feature-B
+    commit
+    checkout main
+    merge feature-A
+    merge feature-B
 ```
 
----
-
-### Advantages
-
-* Parallel development
-* Code isolation
-* Easy testing
-* Stable main branch
+A **branching strategy** is just the agreed set of rules for *which* branches exist and *how* code flows between them. The two most common are below.
 
 ---
 
-### Best Practice
+## 2. GitHub Flow (simple & modern)
 
-Never push directly to main branch.
-Always use Pull Requests.
+### Analogy
+A **single main road** with short side-trips. You leave `main`, do one thing, and come straight back.
 
----
-
-## 2. GitHub Flow Overview
-
----
-
-### What is GitHub Flow?
-
-GitHub Flow is a **simple and lightweight branching model**.
-
-Used by:
-
-* Startups
-* Agile teams
-* Continuous deployment projects
-
----
-
-### GitHub Flow Steps
-
-1. Create branch from main
-2. Make changes and commit
-3. Open Pull Request
-4. Review code
-5. Merge to main
-6. Deploy
-
----
-
-### Key Characteristics
-
-* Only one main branch
-* Short-lived feature branches
-* Frequent deployments
-
----
-
-## 3. GitFlow Branching Strategy
-
----
-
-### What is GitFlow?
-
-GitFlow is a **structured branching model** designed for large projects.
-
----
-
-### Main Branches in GitFlow
-
-| Branch  | Purpose                |
-| ------- | ---------------------- |
-| main    | Production code        |
-| develop | Integration branch     |
-| feature | Feature development    |
-| release | Pre-production testing |
-| hotfix  | Production bug fix     |
-
----
-
-### GitFlow Diagram
-
-```
-main
-  |
-develop
-  |
-feature branches
-  |
-release
-  |
-hotfix
+```mermaid
+flowchart LR
+    A["1 Branch from main"] --> B["2 Commit changes"]
+    B --> C["3 Open Pull Request"]
+    C --> D["4 Review & approve"]
+    D --> E["5 Merge to main"]
+    E --> F["6 Deploy"]
+    style E fill:#238636,color:#fff
 ```
 
----
+**There's only ONE long-lived branch: `main`** (always deployable). Everything else is a short-lived feature branch.
 
-### When GitFlow Is Used
-
-* Enterprise projects
-* Versioned releases
-* Large teams
+**Best for:** small/medium teams, web apps, **continuous deployment** (ship many times a day).
 
 ---
 
-## 4. Release and Hotfix Branch Management
+## 3. GitFlow (structured, for scheduled releases)
 
----
+### Analogy
+A **factory with separate assembly lines**: one line for daily integration, one for packaging a release, one for emergency repairs.
 
-### Release Branch
+GitFlow uses **two permanent branches** plus three temporary types:
 
-Used when:
+| Branch | Lives | Purpose |
+|---|---|---|
+| **`main`** | forever | Production-ready, released code only |
+| **`develop`** | forever | Integration branch - features land here first |
+| **`feature/*`** | temporary | Build a new feature (branch off `develop`) |
+| **`release/*`** | temporary | Stabilize & prepare a version before going live |
+| **`hotfix/*`** | temporary | Urgent production fix (branch off `main`) |
 
-* Features are complete
-* Preparing production release
-
----
-
-### Release Workflow
-
-```
-develop → release → main
-```
-
-Purpose:
-
-* Final testing
-* Bug fixing
-* Version bump
-
----
-
-### Hotfix Branch
-
-Used when:
-
-* Production issue occurs
-* Immediate fix required
-
----
-
-### Hotfix Workflow
-
-```
-main → hotfix → main + develop
+```mermaid
+gitGraph
+    commit id: "init"
+    branch develop
+    checkout develop
+    commit id: "dev work"
+    branch feature/login
+    checkout feature/login
+    commit id: "login"
+    checkout develop
+    merge feature/login
+    branch release/1.0
+    checkout release/1.0
+    commit id: "rc fixes"
+    checkout main
+    merge release/1.0 tag: "v1.0"
+    checkout develop
+    merge release/1.0
 ```
 
----
+**Best for:** larger teams, mobile/desktop apps, products with **planned, versioned releases**.
 
-### Important Rule
+> **Deeper dive:** see [`branching-strategy.md`](branching-strategy.md) for the full GitFlow branch-by-branch breakdown.
 
-Hotfix must be merged back into:
+### Which should *you* use?
+| Use **GitHub Flow** if… | Use **GitFlow** if… |
+|---|---|
+| You deploy continuously | You ship on a schedule (v1.0, v1.1…) |
+| Small/medium team | Large team, multiple versions in support |
+| Simplicity matters | You need strict release control |
 
-* main
-* develop
-
-To avoid missing fixes.
-
----
-
-
-## 7. Tagging and Release Versioning
+> Most modern web teams use **GitHub Flow** (or a trunk-based variant). GitFlow is heavier - powerful, but often more process than small teams need.
 
 ---
 
-### What is Git Tag?
+## 4. Release & Hotfix Management
 
-Tag is:
-
-* Marker for specific commit
-* Used for releases
-
----
-
-### Create Lightweight Tag
-
+### Release branch - prepare a version calmly
 ```bash
-git tag v1.0
+git switch -c release-1.0 develop
+# only bug fixes & final polish here - no new features
+# when ready, merge to main AND back to develop, then tag
 ```
 
----
-
-### Create Annotated Tag
-
+### Hotfix branch - fix production *now*
 ```bash
-git tag -a v1.0 -m "First release"
+git switch -c hotfix-login main      # branch straight off production
+# fix the bug, commit
+git switch main && git merge hotfix-login
+git switch develop && git merge hotfix-login   # don't forget this!
 ```
+
+> **Always merge a hotfix back into `develop` too**, or the bug reappears in your next release.
 
 ---
 
-### Push Tags to Remote
+## 5. Tagging & Versioning
 
+A **tag** is a permanent label on a specific commit - usually marking a release.
 ```bash
-git push origin --tags
+git tag v1.0                 # lightweight tag
+git tag -a v1.0 -m "First release"   # annotated tag (recommended - stores author/date/message)
+git push origin v1.0         # tags aren't pushed by default
+git push origin --tags       # push all tags
 ```
 
----
-
-### Why Tags Are Important
-
-* Release tracking
-* Rollback reference
-* Deployment versions
+### Lightweight vs annotated
+- **Lightweight** = a sticky note (just a name).
+- **Annotated** = a sticky note *with* who/when/why - preferred for releases.
 
 ---
 
-## 8. Git Usage in CI/CD Pipelines
+## 6. Semantic Versioning (SemVer)
 
----
+A shared language for version numbers: **`MAJOR.MINOR.PATCH`** → e.g. `2.1.3`
 
-### How Git Is Used in CI/CD
-
-Whenever code is pushed:
-
-* Build triggered
-* Tests executed
-* Deployment started
-
----
-
-### Example Flow
-
-```
-Push Code → CI Pipeline → Test → Build → Deploy
+```mermaid
+flowchart LR
+    M["MAJOR (2)<br/>breaking changes"] --- N["MINOR (1)<br/>new features,<br/>still compatible"] --- P["PATCH (3)<br/>bug fixes only"]
+    style M fill:#f85149,color:#fff
+    style N fill:#d29922,color:#fff
+    style P fill:#3fb950,color:#fff
 ```
 
----
-
-### Common Integrations
-
-* GitHub Actions
-* Jenkins
-* GitLab CI
-* Azure DevOps
+- Bump **MAJOR** when you break backward compatibility (`1.x → 2.0`).
+- Bump **MINOR** when you add features that don't break anything (`2.0 → 2.1`).
+- Bump **PATCH** for backward-compatible bug fixes (`2.1 → 2.1.1`).
 
 ---
 
-### Best Practices
+## 7. Git in CI/CD
 
-* Protect main branch
-* Require PR approval
-* Run automated tests
+### Analogy
+A **motion-sensor light**: you walk in (push code), the light turns on automatically (the pipeline runs). No one flips a switch.
 
----
+When you push (or open a PR), Git **triggers an automated pipeline** that can:
+1. Run tests
+2. Build the app / container image
+3. Deploy to an environment
 
-## 9. Repository Maintenance & Hygiene
-
----
-
-### Why Repository Hygiene Matters
-
-Clean repo means:
-
-* Easy navigation
-* Faster onboarding
-* Better collaboration
-
----
-
-### Best Practices
-
-* Delete merged branches
-* Use meaningful commit messages
-* Maintain README
-* Organize folders
-* Avoid committing secrets
-
----
-
-## 10. Collaboration Best Practices
-
----
-
-### Team Rules
-
-* Always use PRs
-* Review before merge
-* Keep commits small
-* Communicate changes
-
----
-
-### Naming Standards
-
-Branch names:
-
-```
-feature-login
-bugfix-auth
-hotfix-payment
+```mermaid
+flowchart LR
+    Push["git push"] --> Trigger["Pipeline triggered"]
+    Trigger --> Test["Run tests"] --> Build["Build"] --> Deploy["Deploy"]
 ```
 
-Commit messages:
+> This is exactly the bridge into the **CI/CD module** later in the course.
 
+---
+
+## 8. Repository Hygiene (habits of good teams)
+
+- **Use `.gitignore`** - never commit secrets, `node_modules`, build output.
+- **Delete merged branches** - keep the branch list short.
+- **Write clear commit messages** - your history is documentation.
+- **Review before merge** - every change goes through a PR.
+- **Protect `main`** - require reviews & passing tests before merging (GitHub branch protection rules).
+
+---
+
+## Common Mistakes
+1. **Choosing GitFlow for a tiny team** → drowning in process. Start simple.
+2. **Forgetting to merge a hotfix back into `develop`.**
+3. **Pushing tags and forgetting** they need `git push origin --tags`.
+4. **Letting `main` accept un-reviewed commits.**
+
+---
+
+## Quick Self-Check
+1. How many long-lived branches does GitHub Flow have? GitFlow?
+2. When would you choose GitFlow over GitHub Flow?
+3. A hotfix is merged into `main` - what other branch must it also go into?
+4. In `2.1.3`, which number bumps for a breaking change?
+5. What triggers a CI/CD pipeline?
+
+---
+
+## Hands-On Lab
+```bash
+# practice a release tag
+git switch main
+git tag -a v1.0 -m "First stable release"
+git push origin v1.0
+
+# practice GitHub Flow end-to-end
+git switch -c feature-about
+echo "About page" > about.txt
+git add . && git commit -m "Add about page"
+git push origin feature-about
+# → open a Pull Request on github.com, review, merge, then:
+git switch main && git pull
+git branch -d feature-about
 ```
-Add payment validation
-Fix login error
-Update README
-```
-
----
-
-## 11. Real-World Git Workflows Used in Companies
-
----
-
-### Startup Environment
-
-Uses:
-
-* GitHub Flow
-* Fast releases
-* Small teams
-
----
-
-### Enterprise Environment
-
-Uses:
-
-* GitFlow
-* Release branches
-* Strict review policies
-
----
-
-### DevOps Environment
-
-Uses:
-
-* Protected branches
-* Automated pipelines
-* Tag-based deployments
 
 ---
 
 ## End of Day 5 Summary
+You can now:
+- Apply GitHub Flow and GitFlow
+- Manage releases, hotfixes, tags, and versions
+- Understand Git's role in CI/CD
+- Keep repositories clean and protected
 
-Students should now be able to:
-
-* Choose correct branching strategy
-* Manage releases and hotfixes
-* Maintain clean repositories
-* Use Git in CI/CD pipelines
-* Follow enterprise best practices
-* Work in professional team environments
-
----
-
-If you want, I can also provide:
-
-* **Final capstone project design**
-* **Company workflow simulation lab**
-* **Interview Q&A for advanced Git**
-* **Branching strategy comparison chart**
-* **Trainer teaching checklist**
-
-Just tell me 👍
+**You've finished the core 5 days!** Don't miss the → [**Bonus: Git Power Tools**](../day6-power-tools/readme.md) (reflog, bisect, hooks).
+Then continue to → [`learn-docker`](../../learn-docker).

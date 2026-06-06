@@ -1,787 +1,314 @@
-# 📘 Day 4 – Collaboration Workflow & Essential Git Commands
+# Day 4 - Collaboration Workflow & Essential Git Commands
+
+> **Goal of today:** the professional toolkit - Pull Requests, code review, and the "power commands" (stash, cherry-pick, rebase) you'll use on real teams.
+
+> **Open while you read:** [Branching: Merge vs Rebase](../animations/git-branching.html) - section 5 makes total sense once you've played with it.
+
+---
 
 ## Objective of Day 4
 
-By the end of this session, students will:
-
-* Understand real-world team collaboration workflow
-* Create and manage Pull Requests
-* Participate in code reviews
-* Handle advanced Git commands safely
-* Understand merge strategies and conflicts
-* Recover from common Git mistakes
-
----
-
-## 1. What is Collaboration Workflow?
-
-### Simple Meaning
-
-Collaboration workflow defines:
-
-How multiple developers:
-
-* Work on the same repository
-* Share code
-* Review changes
-* Merge safely into main branch
+By the end you will be able to:
+- Open and review **Pull Requests**
+- Contribute via **forks**
+- Keep a feature branch up to date (**merge vs rebase**)
+- Use **stash**, **revert**, **cherry-pick**
+- Resolve merge conflicts
+- **Squash** commits and **force-push safely**
+- Use **interactive rebase** to clean history
 
 ---
 
-### Typical Team Workflow
+## 1. Pull Requests (PRs)
 
-```
-Create Feature Branch
-        ↓
-Develop & Commit
-        ↓
-Push to Remote
-        ↓
-Create Pull Request
-        ↓
-Code Review
-        ↓
-Merge to Main
+### Analogy
+A Pull Request is like submitting an essay for a teacher's review **before** it goes in the school magazine. You say "here's my work - please check it," others comment, you revise, and only then is it published (merged).
+
+A **Pull Request** is a request to merge code from one branch into another (usually into `main`), with a built-in space for **review and discussion** *before* the merge.
+
+```mermaid
+flowchart LR
+    A["Feature branch"] --> B["Push to GitHub"]
+    B --> C["Open PR"]
+    C --> D["Review & discuss"]
+    D --> E["Approve & merge"]
+    style E fill:#238636,color:#fff
 ```
 
----
+**Why PRs matter:** they ensure code quality, enable team review, **prevent direct commits to `main`**, and create a permanent record of *why* a change was made.
 
-## 2. Pull Request (PR) Workflow
-
----
-
-### What is a Pull Request?
-
-A Pull Request is:
-
-A request to merge code from one branch into another branch.
-
-Used to:
-
-* Review code
-* Discuss changes
-* Approve features
-* Maintain quality
+**PR best practices:**
+- Keep PRs **small** (easier to review well)
+- Write a **clear description** of what & why
+- Add **screenshots** for UI changes
+- Request **specific reviewers**
+- **Respond** to every comment
 
 ---
 
-### PR Workflow Steps
+## 2. Code Review
 
-1. Create feature branch
-2. Commit changes
-3. Push branch to GitHub
-4. Open Pull Request
-5. Review and approve
-6. Merge PR
-7. Delete feature branch
+Code review = another developer reads your change before it merges. It's not criticism - it's a safety net and a teaching moment.
+
+**Benefits:** catches bugs early • improves quality • spreads knowledge across the team • keeps a consistent style.
+
+> **Reviewer mindset:** be kind, be specific, ask questions ("what happens if this is empty?") rather than issuing orders.
 
 ---
 
-### Benefits of PR
+## 3. Fork-Based Contribution (open source)
 
-* Code quality improves
-* Bugs detected early
-* Team collaboration
-* Clear change tracking
+### What is a fork?
+A **fork** is your *own copy* of someone else's repository on GitHub. You can't push directly to projects you don't own - so you fork, change *your* copy, and propose your change back via a PR.
 
----
-
-## 3. Code Review Process
-
----
-
-### What is Code Review?
-
-Code review means:
-
-Other developers review your code before merging.
-
----
-
-### What Reviewers Check
-
-* Code correctness
-* Performance
-* Security issues
-* Coding standards
-* Readability
-
----
-
-### Best Practices
-
-* Keep PRs small
-* Write clear commit messages
-* Respond to comments
-* Fix requested changes
-
----
-
-## 4. Fork-Based Contribution Workflow
-
----
-
-### What is Fork?
-
-Fork means:
-
-Creating a copy of someone else’s repository in your GitHub account.
-
-Used in:
-
-* Open-source projects
-* External contributions
-
----
-
-### Fork Workflow
-
-```
-Fork Repo
-   ↓
-Clone Fork
-   ↓
-Create Feature Branch
-   ↓
-Push Changes
-   ↓
-Create PR to Original Repo
+```mermaid
+flowchart LR
+    Orig["Original repo<br/>(you can't push here)"] -->|1. Fork| Mine["Your fork"]
+    Mine -->|2. Clone| Local["Your laptop"]
+    Local -->|3. Branch + commit| Local
+    Local -->|4. Push| Mine
+    Mine -->|5. Pull Request| Orig
 ```
 
----
+**Fork workflow:** `Fork → Clone → Branch → Commit → Push → Pull Request`
 
-### Why Fork Is Important
-
-* You don’t get direct write access
-* Safe contribution model
-* Maintains repository security
+> See [Day 3](../day3/readme.md) for `origin` (your fork) vs `upstream` (the original) remotes.
 
 ---
 
-## 5. Updating Feature Branch with Latest Base Changes
+## 4. Keeping Your Feature Branch Up to Date
 
-When main branch gets new commits:
+While you work, `main` keeps moving as teammates merge. If your branch falls behind, update it **before** merging to avoid a messy integration.
 
-Your feature branch becomes outdated.
+```
+main:    A --- B --- C --- D        (C, D added by others)
+              \
+feature:       E --- F              (your work, now behind)
+```
+
+You have **two ways** to catch up: **merge** or **rebase**.
+
+### Option 1 - Merge `main` into your feature
+```bash
+git switch feature
+git merge main
+```
+```
+main:    A --- B --- C --- D
+              \           \
+feature:       E --- F --- M     (M = merge commit)
+```
+Safe • preserves history • commit IDs unchanged
+Adds extra merge commits → noisier history
+
+### Option 2 - Rebase your feature onto `main`
+```bash
+git switch feature
+git rebase main
+```
+```
+main:    A --- B --- C --- D
+                          \
+feature:                   E' --- F'   (replayed on top)
+```
+Clean, linear history • no merge commit
+**Rewrites history** (E→E′, F→F′) - only safe on *your own* unshared branch
 
 ---
 
-### Method 1 — Merge Main into Feature
+## 5. Merge vs Rebase (the big one)
+
+### Analogy
+- **Merge** = stapling two notebooks together with a note saying "combined here." The real timeline is preserved.
+- **Rebase** = neatly recopying your draft pages *onto the end* of the main book so it reads as one straight story.
+
+| | **Merge** | **Rebase** |
+|---|---|---|
+| History shape | Branched (fork & join) | Straight & linear |
+| Merge commit? | Yes | No |
+| Rewrites history? | No | **Yes** (new commit IDs) |
+| Safe on shared branches? | Yes | No |
+
+```mermaid
+flowchart TB
+    subgraph M["Merge - preserves reality"]
+        direction LR
+        m1[A]-->m2[B]-->m3[C]-->m4[D]-->mm[M]
+        m2-->me[E]-->mf[F]-->mm
+    end
+    subgraph R["Rebase - clean line"]
+        direction LR
+        r1[A]-->r2[B]-->r3[C]-->r4[D]-->re["E'"]-->rf["F'"]
+    end
+```
+
+### The Golden Rule of Rebase
+> **Never rebase commits that have already been pushed and shared with others.**
+> Rebasing shared history rewrites commits other people already have → chaos. Use rebase only to tidy *your own local* branch before opening a PR.
+
+| Situation | Use |
+|---|---|
+| Working alone, tidy before PR | **Rebase** |
+| Shared/public branch | **Merge** |
+| Open-source contribution | **Rebase** (clean history is appreciated) |
+| Integrating into `main` | **Merge** (via PR) |
+
+> Still fuzzy? The [interactive Merge vs Rebase animation](../animations/git-branching.html) lets you *watch* both happen.
+
+---
+
+## 6. Git Stash - shelve work temporarily
+
+### Analogy
+You're mid-cooking and need the counter *right now* for something urgent. Sweep your work onto a tray, deal with the emergency, then bring the tray back.
 
 ```bash
-git checkout feature
-git merge origin/main
+git stash          # shelve all uncommitted changes; working dir goes clean
+git switch main    # handle the urgent thing
+git switch feature
+git stash pop      # bring your work back exactly as it was
 ```
-
-Creates merge commit.
-
----
-
-### Method 2 — Rebase Feature onto Main
-
-```bash
-git checkout feature
-git rebase origin/main
-```
-
-Creates clean linear history.
+More in the [Power Tools lesson](../day6-power-tools/readme.md).
 
 ---
 
-### Industry Practice
+## 7. Git Revert - safely undo a commit
 
-* Merge for shared branches
-* Rebase for personal feature branches
-
----
-
-## 6. Git Stash (Temporary Work Management)
-
----
-
-### What is Git Stash?
-
-Git stash temporarily saves:
-
-* Uncommitted changes
-* Working directory state
-
-Allows you to:
-
-* Switch branches
-* Pull updates
-* Resume later
-
----
-
-### Save Work
-
-```bash
-git stash
-```
-
----
-
-### View Stash List
-
-```bash
-git stash list
-```
-
----
-
-### Restore Latest Stash
-
-```bash
-git stash pop
-```
-
----
-
-### Apply Without Removing
-
-```bash
-git stash apply
-```
-
----
-
-## 7. Git Revert (Safe Rollback)
-
----
-
-### What is Git Revert?
-
-Revert:
-
-* Creates new commit
-* Reverses changes safely
-* Does NOT rewrite history
-
----
-
-### Revert Command
-
+**Revert** creates a *new* commit that reverses a previous one - without destroying history. This makes it **safe for shared branches**.
 ```bash
 git revert <commit-id>
 ```
+> This is so important it has its own deep-dive: [**revert.md**](revert.md) - including reverting merge commits and revert-vs-reset.
 
 ---
 
-### When to Use Revert?
+## 8. Git Cherry-Pick - grab one specific commit
 
-* Production bug
-* Shared branch rollback
-* Safe undo required
-
----
-
-## 8. Git Cherry-Pick (Selective Commit Transfer)
-
----
-
-### What is Cherry-Pick?
-
-Cherry-pick allows:
-
-* Copying specific commit
-* From one branch to another
-
----
-
-### Cherry-Pick Example
-
+### Analogy
+Picking *one* cherry off a tree instead of taking the whole branch. You copy a single commit from one branch onto your current branch.
 ```bash
 git cherry-pick <commit-id>
 ```
+**Use case:** a bug fix was committed on `develop`, but you need *just that one fix* on your release branch right now.
 
 ---
 
-### Use Case
+## 9. Handling Merge Conflicts
 
-* Hotfix from feature to main
-* Apply specific patch
-
----
-## 9. Handling Non-Fast-Forward Errors
-
----
-
-### Common Error Message
+Conflicts happen when the **same lines** of the **same file** were changed differently on two branches. Git can't guess which is right, so it asks you.
 
 ```
-non-fast-forward rejected
-```
-
----
-
-### Why It Happens
-
-* Remote branch has new commits
-* Local branch is outdated
-
----
-
-### Fix Using Pull or Rebase
-
-```bash
-git pull --rebase
-```
-
-OR
-
-```bash
-git fetch
-git rebase origin/main
-```
-
-Then push:
-
-```bash
-git push --force-with-lease
-```
-
----
-
-## 10. Fast-Forward vs Normal Merge
-
----
-
-### Fast-Forward Merge
-
-Occurs when:
-
-* Main branch has no new commits
-* Feature branch is ahead
-
-No merge commit created.
-
----
-
-### Normal Merge
-
-Occurs when:
-
-* Both branches changed
-
-Creates merge commit.
-
----
-
-## 11. Merge Commit & History Visualization
-
----
-
-### Merge Commit
-
-Merge commit:
-
-* Has two parent commits
-* Preserves branch history
-
-
----
-
-## 12. Three-Way Merge Concept
-
-Git compares:
-
-* Base commit
-* Current branch (HEAD)
-* Incoming branch
-
-If both branches change same line differently:
-
-→ Conflict occurs.
-
----
-
-## 13. Merge Conflict Detection & Resolution
-
----
-
-### When Conflict Occurs
-
-* Same file
-* Same line
-* Different changes
-
----
-
-### Conflict Markers
-
-```text
 <<<<<<< HEAD
-your code
+Your changes (current branch)
 =======
-incoming code
->>>>>>> branch
+Incoming changes (other branch)
+>>>>>>> branch-name
 ```
-
----
-
-### Resolution Steps
-
-1. Open file
-2. Decide correct code
-3. Remove markers
-4. Save file
-5. Stage file
-6. Commit merge
-
-Commands:
-
+**Resolve in 4 steps:**
+1. Open the conflicted file
+2. Edit it to the correct final version
+3. Delete the `<<<<<<<`, `=======`, `>>>>>>>` markers
+4. Stage & commit:
 ```bash
 git add .
 git commit
 ```
+> Conflicts are **normal**, not a sign you broke something. Different files / different lines merge automatically - only true overlaps conflict.
 
 ---
 
-## 14. Best Practices for Conflict Management
+## 10. Squashing Commits - a clean history
+
+### Analogy
+You made 8 messy commits while figuring something out (`wip`, `fix typo`, `oops`, `try again`). **Squashing** combines them into **one clean commit** before merging - so the project history reads nicely.
+
+The easiest way is the **"Squash and merge"** button on a GitHub PR. Manually, use interactive rebase (next section).
 
 ---
 
-* Pull main branch frequently
-* Keep PRs small
-* Communicate with team
-* Rebase feature branches regularly
-* Avoid long-running branches
+## 11. Interactive Rebase - rewrite your own history
 
----
-
-
-
-# 🔁 Merge vs Rebase – Clear Comparison
-
-Both **merge** and **rebase** are used to integrate changes from one branch into another, but they work in **very different ways**.
-
----
-
-## What is Merge?
-
-### Definition
-
-Merge combines two branches by creating a **merge commit** that joins both histories.
-
----
-
-### Command Example
-
+### What it does
+`git rebase -i` lets you **edit, reorder, squash, or delete** your recent commits - like editing a rough draft before publishing. **Only do this on commits you haven't shared yet.**
 ```bash
-git merge feature
+git rebase -i HEAD~3        # edit the last 3 commits
 ```
-
-(while on main branch)
-
----
-
-### What Happens Internally
-
-* Git keeps both branch histories
-* Creates a new merge commit
-* Preserves branch structure
-
----
-
-### Merge History Example
-
-Before merge:
-
+Git opens an editor listing them:
 ```
-main:    A --- B --- D
-feature:       C
+pick a1b2c3 Add login form
+pick d4e5f6 fix typo
+pick g7h8i9 oops forgot import
 ```
-
-After merge:
-
+Change the words to act:
 ```
-main:    A --- B --- D ---- M
-                  \      /
-                   C ----
+pick   a1b2c3 Add login form
+squash d4e5f6 fix typo          # fold into the commit above
+squash g7h8i9 oops forgot import
 ```
+Save → Git combines them into one tidy commit. Common actions: `pick` (keep), `squash` (merge into previous), `reword` (change message), `drop` (delete).
 
-`M` = merge commit (has two parents)
-
----
-
-### Characteristics of Merge
-
-* Does NOT rewrite history
-* Safe for shared branches
-* Preserves complete commit timeline
-* Shows exactly when branches were merged
+> [!WARNING]
+> Interactive rebase **rewrites history**. Golden Rule still applies: never on commits you've already pushed/shared.
 
 ---
 
-### When to Use Merge
+## 12. Safe Force-Push (`--force-with-lease`)
 
-Use merge when:
-
-* Working with team branches
-* Merging Pull Requests
-* Updating main branch
-* You want full history visibility
-
----
-
-## What is Rebase?
-
----
-
-### Definition
-
-Rebase moves your branch commits **on top of another branch**, creating a **linear history**.
-
----
-
-### Command Example
-
-```bash
-git rebase main
-```
-
-(while on feature branch)
-
----
-
-### What Happens Internally
-
-* Feature commits are removed
-* Replayed on top of main
-* New commit IDs are created
-* History becomes straight line
-
----
-
-### Rebase History Example
-
-Before rebase:
-
-```
-main:    A --- B --- D
-feature:       C
-```
-
-After rebase:
-
-```
-main:    A --- B --- D --- C'
-```
-
-`C'` = new commit (rewritten)
-
----
-
-### Characteristics of Rebase
-
-* Rewrites commit history
-* Creates clean linear timeline
-* No merge commit
-* Makes history easier to read
-
----
-
-### When to Use Rebase
-
-Use rebase when:
-
-* Working on personal feature branch
-* Cleaning commit history
-* Preparing branch before PR
-* Branch is not shared
-
----
-
-## Key Differences Table
-
-| Feature                | Merge  | Rebase |
-| ---------------------- | ------ | ------ |
-| History rewrite        | ❌ No   | ✅ Yes  |
-| Merge commit created   | ✅ Yes  | ❌ No   |
-| Commit IDs change      | ❌ No   | ✅ Yes  |
-| Safe for team branches | ✅ Yes  | ❌ No   |
-| History readability    | Medium | High   |
-| Rollback safety        | High   | Medium |
-
----
-
-## Safety Rules (Very Important)
-
-### Never Rebase These Branches
-
-```
-main
-develop
-release
-shared branches
-```
-
----
-
-### Rebase Only These Branches
-
-```
-feature branches
-local branches
-personal branches
-```
-
----
-
-## Real Industry Usage
-
-### Companies Use Merge For:
-
-* Pull Requests
-* Main branch integration
-* Production merges
-
----
-
-### Companies Use Rebase For:
-
-* Cleaning feature branch history
-* Syncing feature branch with main
-* Removing unnecessary commits
-
----
-
-## Interview Answer (Perfect)
-
-Question: Difference between merge and rebase?
-
-Answer:
-
-> Merge preserves branch history by creating a merge commit, while rebase rewrites commit history by replaying commits on top of another branch, creating a linear history.
-
----
-
-## Simple Memory Trick
-
-Merge = Join histories
-Rebase = Rewrite history
-
----
-
-## Final Summary
-
-* Merge is safe and preserves history
-* Rebase creates clean history but rewrites commits
-* Use merge for team work
-* Use rebase for personal feature branches
-
-
-## 15. Practical Demonstrations & Hands-On Labs
-
-Suggested Labs:
-
-* Create PR workflow demo
-* Fork and contribute demo
-* Simulate merge conflict
-* Resolve conflict manually
-* Use stash and cherry-pick
-* Practice rebase
-
----
-
-
-## 5. Squash Commits & Clean History Practices
-
----
-
-### What is Squash Commit?
-
-Squash means:
-
-* Combine multiple commits
-* Into single commit
-
----
-
-### Why Squash?
-
-* Cleaner history
-* Easy rollback
-* Better readability
-
----
-
-### Example
-
-Before squash:
-
-```
-fix typo
-update UI
-final fix
-```
-
-After squash:
-
-```
-Add login feature
-```
-
----
-
-### When to Squash
-
-* Before merging PR
-* Feature branch cleanup
-
----
-
-## 6. Safe Force Push Techniques
-
----
-
-### What is Force Push?
-
-Force push overwrites remote history.
-
-Command:
-
-```bash
-git push --force
-```
-
----
-
-### Why Dangerous?
-
-* Deletes others' commits
-* Breaks collaboration
-
----
-
-### Safe Alternative
-
-Always use:
-
+After a rebase, your local branch's history differs from the remote, so a normal `push` is rejected ("non-fast-forward"). You must force it - but **safely**:
 ```bash
 git push --force-with-lease
 ```
+- `git push --force` → overwrites the remote *blindly* (can erase a teammate's commits).
+- `git push --force-with-lease` → only forces if **no one else has pushed** since you last fetched. It refuses if it would clobber someone's work.
+
+> **Rule:** if you ever feel you need `--force`, use `--force-with-lease` instead. And never force-push a shared branch like `main`.
 
 ---
 
-### When Force Push Is Allowed
-
-* Personal feature branch
-* After rebase
-* Never on main branch
+## Common Mistakes
+1. **Rebasing a shared branch** → breaks teammates' history (Golden Rule!).
+2. **Giant PRs** that no one can review properly.
+3. **`git push --force`** instead of `--force-with-lease`.
+4. **Leaving conflict markers** (`<<<<<<<`) in files - always search for them before committing.
 
 ---
 
+## Quick Self-Check
+1. What problem does a Pull Request solve?
+2. Merge vs rebase: which keeps a linear history? Which is safe on shared branches?
+3. State the Golden Rule of Rebase.
+4. What's the difference between `revert` and `reset`?
+5. Why prefer `--force-with-lease` over `--force`?
+6. What does `git rebase -i` let you do?
+
+---
+
+## Hands-On Lab
+```bash
+# 1. cherry-pick practice
+git switch -c fix-branch
+echo "important fix" > fix.txt && git add . && git commit -m "Critical fix"
+git log --oneline                  # copy the fix commit hash
+git switch main
+git cherry-pick <that-hash>        # bring just that commit over
+
+# 2. interactive rebase: squash 3 messy commits into one
+git switch -c messy
+echo a> a.txt && git add . && git commit -m "wip"
+echo b>> a.txt && git add . && git commit -m "fix"
+echo c>> a.txt && git add . && git commit -m "oops"
+git rebase -i HEAD~3               # squash the last two into the first
+```
+
+---
 
 ## End of Day 4 Summary
+You can now:
+- Open, review, and merge Pull Requests
+- Contribute via forks
+- Update branches with merge or rebase (and know the Golden Rule)
+- Use stash, revert, cherry-pick
+- Resolve conflicts, squash commits, and force-push safely
 
-You should now be able to:
-
-* Create Pull Requests
-* Participate in code reviews
-* Use stash, revert, cherry-pick
-* Handle merge conflicts
-* Understand merge strategies
-* Recover from common Git issues
-
+Next up → [**Day 5: Branching Strategies & Best Practices**](../day5/readme.md)
+Deeper on undo → [**revert.md**](revert.md)

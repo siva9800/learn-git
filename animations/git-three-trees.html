@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git Interactive Simulator — The Three Trees</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3;
+    min-height:100vh;padding:22px;display:flex;flex-direction:column;align-items:center;}
+  h1{font-size:1.6rem;text-align:center;}
+  p.sub{color:#8b949e;max-width:680px;text-align:center;margin:6px 0 18px;}
+  .analogy{background:#161b22;border:1px solid #30363d;border-left:4px solid #f0883e;
+    border-radius:8px;padding:12px 16px;max-width:760px;font-size:.9rem;color:#c9d1d9;margin-bottom:20px;}
+  .analogy b{color:#f0883e;}
+  .stage-area{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:900px;}
+  @media(max-width:720px){.stage-area{grid-template-columns:1fr;}}
+  .tree{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:16px;min-height:220px;
+    display:flex;flex-direction:column;transition:border-color .3s,box-shadow .3s;}
+  .tree.flash{border-color:#58a6ff;box-shadow:0 0 18px rgba(88,166,255,.4);}
+  .tree h3{font-size:1rem;margin-bottom:2px;}
+  .tree .desc{font-size:.74rem;color:#8b949e;margin-bottom:12px;}
+  .wd h3{color:#f85149;} .sa h3{color:#d29922;} .repo h3{color:#3fb950;}
+  .file{display:flex;align-items:center;gap:8px;background:#0d1117;border:1px solid #30363d;
+    border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.85rem;
+    animation:pop .3s ease;}
+  @keyframes pop{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .file.modified{border-color:#f85149;color:#ffa198;}
+  .file.staged{border-color:#d29922;color:#e3b341;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .commit{background:#0d1117;border:1px solid #238636;border-radius:8px;padding:8px 10px;
+    margin-bottom:8px;font-size:.78rem;animation:pop .3s ease;}
+  .commit .hash{color:#3fb950;font-family:monospace;font-weight:700;}
+  .commit .msg{color:#c9d1d9;}
+  .empty{color:#6e7681;font-size:.8rem;font-style:italic;margin-top:auto;margin-bottom:auto;text-align:center;}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:22px 0 10px;max-width:820px;}
+  button{border:none;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:.86rem;
+    transition:filter .15s,transform .1s;}
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .b-edit{background:#f85149;color:#fff;} .b-add{background:#d29922;color:#1c1c00;}
+  .b-commit{background:#238636;color:#fff;} .b-reset{background:#30363d;color:#e6edf3;}
+  button:hover:not(:disabled){filter:brightness(1.12);}
+  .terminal{background:#010409;border:1px solid #30363d;border-radius:10px;padding:14px 16px;
+    width:100%;max-width:820px;font-family:'Cascadia Code',Consolas,monospace;font-size:.84rem;
+    min-height:120px;margin-top:6px;}
+  .terminal .cmd{color:#58a6ff;} .terminal .out{color:#8b949e;} .terminal .ok{color:#3fb950;}
+  .arrow{text-align:center;color:#6e7681;font-size:1.4rem;}
+</style>
+</head>
+<body>
+  <h1>🌳 Git's Three Trees — Interactive Simulator</h1>
+  <p class="sub">The #1 thing to understand about Git. Click the buttons and watch your file travel through the three areas. No installation, no risk — just learn by doing.</p>
+
+  <div class="analogy">
+    📦 <b>Real-world analogy:</b> Think of shipping a parcel.
+    <b>Working Directory</b> = your desk where you pack things (messy, changing).
+    <b>Staging Area</b> = the box by the door you've decided to actually send.
+    <b>Repository</b> = the parcel handed to the post office — sealed, dated, and permanently recorded.
+    <code>git add</code> moves things into the box; <code>git commit</code> seals & ships it.
+  </div>
+
+  <div class="stage-area">
+    <div class="tree wd" id="wd">
+      <h3>1. Working Directory</h3>
+      <div class="desc">Your files as you edit them. "Modified" = changed but not yet saved to Git.</div>
+      <div id="wdList"></div>
+      <div class="empty" id="wdEmpty">No changes yet. Click <b>✏️ Edit file</b>.</div>
+    </div>
+    <div class="tree sa" id="sa">
+      <h3>2. Staging Area</h3>
+      <div class="desc">A waiting room. Things you've chosen for the next commit. Set by <code>git add</code>.</div>
+      <div id="saList"></div>
+      <div class="empty" id="saEmpty">Empty. Nothing staged.</div>
+    </div>
+    <div class="tree repo repo" id="repo">
+      <h3>3. Repository (.git)</h3>
+      <div class="desc">Permanent, dated history. Sealed by <code>git commit</code>. This is the real "save point".</div>
+      <div id="repoList"></div>
+      <div class="empty" id="repoEmpty">No commits yet.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="b-edit" id="bEdit">✏️ Edit a file</button>
+    <button class="b-add" id="bAdd">➕ git add</button>
+    <button class="b-commit" id="bCommit">✅ git commit</button>
+    <button class="b-reset" id="bReset">↻ Reset</button>
+  </div>
+
+  <div class="terminal" id="term"></div>
+
+<script>
+  const files=["index.html","style.css","app.js","README.md","data.json"];
+  let wd=[],sa=[],repo=[],fileCounter=0,commitCounter=0;
+  const $=id=>document.getElementById(id);
+
+  function flash(id){const e=$(id);e.classList.add("flash");setTimeout(()=>e.classList.remove("flash"),500);}
+  function hash(){return Math.random().toString(16).slice(2,9);}
+
+  function render(){
+    $("wdList").innerHTML=wd.map(f=>`<div class="file modified"><span class="dot" style="background:#f85149"></span>${f} <span style="margin-left:auto;font-size:.7rem">modified</span></div>`).join("");
+    $("saList").innerHTML=sa.map(f=>`<div class="file staged"><span class="dot" style="background:#d29922"></span>${f} <span style="margin-left:auto;font-size:.7rem">staged</span></div>`).join("");
+    $("repoList").innerHTML=repo.map(c=>`<div class="commit"><span class="hash">${c.h}</span> <span class="msg">${c.m}</span><br><span style="font-size:.68rem;color:#6e7681">${c.files.join(", ")}</span></div>`).join("");
+    $("wdEmpty").style.display=wd.length?"none":"block";
+    $("saEmpty").style.display=sa.length?"none":"block";
+    $("repoEmpty").style.display=repo.length?"none":"block";
+    $("bAdd").disabled=wd.length===0;
+    $("bCommit").disabled=sa.length===0;
+  }
+
+  function log(cmd,out,cls){
+    const t=$("term");
+    t.innerHTML+=`<div><span class="cmd">$ ${cmd}</span></div>`+(out?`<div class="${cls||'out'}">${out}</div>`:"");
+    t.scrollTop=t.scrollHeight;
+  }
+
+  $("bEdit").onclick=()=>{
+    const f=files[fileCounter%files.length];fileCounter++;
+    if(!wd.includes(f)&&!sa.includes(f)) wd.push(f);
+    else if(!wd.includes(f)) wd.push(f); // re-edit a staged file -> appears modified again
+    flash("wd");log("# you edited "+f+" in your editor","→ '"+f+"' is now MODIFIED in the Working Directory");render();
+  };
+  $("bAdd").onclick=()=>{
+    log("git add .","");
+    sa=[...new Set([...sa,...wd])];wd=[];flash("sa");
+    log("","→ files moved to the Staging Area (ready for commit)","ok");render();
+  };
+  $("bCommit").onclick=()=>{
+    commitCounter++;
+    const h=hash();
+    repo.unshift({h,m:`commit #${commitCounter}`,files:[...sa]});
+    log(`git commit -m "commit #${commitCounter}"`,`[main ${h}] commit #${commitCounter}\n ${sa.length} file(s) permanently saved ✔`,"ok");
+    sa=[];flash("repo");render();
+  };
+  $("bReset").onclick=()=>{wd=[];sa=[];repo=[];fileCounter=0;commitCounter=0;$("term").innerHTML="";render();
+    log("# simulator reset — start fresh","");};
+
+  render();
+  log("# Welcome! Try: Edit a file → git add → git commit","");
+</script>
+</body>
+</html>

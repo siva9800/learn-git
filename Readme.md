@@ -1,179 +1,126 @@
-# Git & GitHub Masterclass – 5 Day Hands-On Training Program
+# Git & GitHub Mastery: From Zero to Hero
 
-## Course Overview
+> **Module 2 of the DevOps Masterclass.** Version control is the foundation everything else is built on. Master this first.
 
-This 5-day hands-on masterclass is designed to build strong Git fundamentals, introduce collaboration workflows, and prepare students for real-world industry usage. The program focuses on practical learning, project-based exercises, and professional development practices used by modern software teams.
-
----
-
-## Learning Objectives
-
-After completing this course, you will be able to:
-
-- Understand Git architecture and internal working
-- Track and manage project versions efficiently
-- Work with both local and remote repositories
-- Apply branching strategies for parallel development
-- Resolve merge conflicts confidently
-- Collaborate using GitHub Pull Requests
-- Use professional Git commands effectively
-- Follow industry-standard Git workflows and best practices
+Welcome! This is a hands-on, beginner-friendly course that takes you from *"I've never used Git"* to *"I confidently use Git every day on real teams."* Every concept starts with a **real-world analogy** so it makes sense even if you've never written code.
 
 ---
 
-## Day 1 – Git Fundamentals & Local Repository Basics
+## First, the big picture: what problem does Git solve?
 
-This day focuses on building a strong foundation in Git and understanding how local version control works.
+Imagine you're writing an important essay. To stay safe, you start saving copies:
 
-### Topics Covered
+> `essay.docx` → `essay_v2.docx` → `essay_final.docx` → `essay_final_REALLY.docx` → `essay_final_USE_THIS_ONE.docx`
 
-- Version Control Systems (VCS) overview
-- Git vs GitHub comparison
-- Distributed version control concept
-- Git installation and environment setup
-- Git architecture (Working Directory, Staging Area, Repository)
-- Repository initialization
-- Tracking file changes
-- Staging and committing workflow
-- Viewing and analyzing commit history
-- Understanding HEAD and commit references
-- Rolling back to previous versions
-- Undoing changes safely
+This is chaos. You can't tell what changed, you can't safely undo, and if two friends edit it, merging their work is a nightmare.
 
-### Outcome
+**Git is a time machine for your files.** It saves clean, labelled "snapshots" of your project, lets you jump back to any point, try risky ideas safely on a "branch," and merge many people's work together - all in one folder, no messy copies.
 
-Students will understand Git internals and confidently manage local repositories.
+```mermaid
+flowchart LR
+    A["Without Git<br/>50 copies of the same file<br/>No idea what changed"] --> B["With Git<br/>One folder<br/>Full labelled history<br/>Safe undo + teamwork"]
+    style A fill:#3a1c1c,stroke:#f85149,color:#fff
+    style B fill:#13351f,stroke:#3fb950,color:#fff
+```
 
 ---
 
-## Day 2 – Branching & Parallel Development Workflow
+## Interactive Animations (open in any browser - no install)
 
-This day introduces branching concepts and safe parallel development practices.
+These make the trickiest ideas *click*. Open them and play:
 
-### Topics Covered
+| Animation | What it teaches |
+|---|---|
+| [**Git's Three Trees**](animations/git-three-trees.html) | The single most important Git concept - how files move from *Working Directory → Staging → Repository*. A clickable simulator. |
+| [**Branching: Merge vs Rebase**](animations/git-branching.html) | Build a commit history visually, then *see* exactly how merge and rebase differ. |
 
-- Branching fundamentals and use cases
-- Creating and managing branches
-- Switching between branches
-- Feature branch workflow
-- Merging feature branches into main
-- Understanding merge strategies
-- Introduction to collaborative development workflow
-
-### Outcome
-
-Students will be able to work on multiple features simultaneously and merge code safely.
+> Tip for class: project the Three-Trees simulator on screen and let students predict what each button does before you click.
 
 ---
 
-## Day 3 – Remote Repositories & GitHub Integration
+## Course Structure
 
-This day focuses on connecting Git with GitHub and managing remote repositories.
+```mermaid
+flowchart LR
+    D1["Day 1<br/>Fundamentals"] --> D2["Day 2<br/>Branching & Merging"]
+    D2 --> D3["Day 3<br/>Remote & GitHub"]
+    D3 --> D4["Day 4<br/>Pro Workflows"]
+    D4 --> D5["Day 5<br/>Team Strategies"]
+    D5 --> D6["Bonus<br/>Power Tools"]
+    style D1 fill:#1f6feb,color:#fff
+    style D6 fill:#bb8009,color:#fff
+```
 
-### Topics Covered
+### [Day 1: Git Fundamentals](day1/readme.md) - *Foundation & Core Concepts*
+- What version control is (with analogies) • Git vs other systems
+- The **three-tree model** (working dir, staging, repository)
+- Essential commands: `init`, `add`, `commit`, `status`, `log`
+- Writing meaningful commit messages
 
-- Remote repository concepts
-- Connecting local repositories to GitHub
-- Understanding origin and upstream remotes
-- Push, pull, and fetch operations
-- Difference between fetch and pull
-- Authentication overview (HTTPS and SSH)
-- Creating and pushing remote branches
-- Updating local branches from remote
-- Synchronizing feature branches with base branch
+### [Day 2: Branching & Merging](day2/readme.md) - *Parallel Development*
+- What a branch really is (a movable sticky-note, not a copy!)
+- Creating/switching branches • fast-forward vs three-way merge
+- Resolving merge conflicts calmly • branch hygiene
 
-### Outcome
+### [Day 3: Remote Repositories](day3/readme.md) - *Collaboration with GitHub*
+- Local vs remote • `clone`, `push`, `pull`, `fetch`
+- `origin` vs `upstream` • HTTPS vs SSH authentication
+- *(Includes the real-world "Repository not found" / auth troubleshooting we all hit.)*
 
-Students will be able to manage remote repositories and keep local and remote code in sync.
+### [Day 4: Advanced Git](day4/readme.md) - *Professional Workflows*
+- Pull requests & code review • forking & contributing
+- `stash`, `cherry-pick`, `revert` • **merge vs rebase** deep-dive
+- Squash commits • safe force-push (`--force-with-lease`)
+- See also: [revert deep-dive](day4/revert.md)
 
----
+### [Day 5: Team Workflows](day5/readme.md) - *Enterprise Practices*
+- **GitHub Flow** vs **GitFlow** ([branching strategy detail](day5/branching-strategy.md))
+- Releases, hotfixes, tagging & versioning
+- CI/CD integration • repository hygiene
 
-## Day 4 – Collaboration Workflow & Essential Git Commands
-
-This day focuses on real-world collaboration and commonly used professional Git commands.
-
-### Topics Covered
-
-- Pull Request (PR) workflow
-- Code review process
-- Fork-based contribution workflow
-- Updating feature branches with latest base changes
-- Git stash for temporary work management
-- Git revert for safe rollback
-- Git cherry-pick for selective commit transfer
-- Interactive rebase overview
-- Handling non-fast-forward errors
-- Common Git errors and recovery techniques
-- Fast-forward vs normal merge
-- Merge commits and history visualization
-- Three-way merge concept
-- Merge conflict detection and resolution
-- Best practices for conflict management
-- Practical demonstrations and hands-on labs
-
-### Outcome
-
-Students will be able to collaborate using GitHub and apply essential Git commands in team environments.
+### [Bonus: Git Power Tools](day6-power-tools/readme.md) - *Save Yourself in a Crisis*
+- `git reflog` - the undo button for your undo button
+- `git bisect` - find the exact commit that broke things
+- `git hooks` - automate checks before every commit
+- `git stash -p`, `add -p`, aliases, and more lifesavers
 
 ---
 
-## Day 5 – Advanced Git Concepts, Branching Strategies & Industry Best Practices
+## Learning Outcomes
 
-This day focuses on production-level Git usage and enterprise workflows.
-
-### Topics Covered
-
-- Team-based feature branch workflows
-- GitHub Flow overview
-- GitFlow branching strategy
-- Release and hotfix branch management
-- Merge vs rebase strategy comparison
-- Squash commits and clean history practices
-- Safe force push techniques
-- Tagging and release versioning
-- Git usage in CI/CD pipelines
-- Repository maintenance and hygiene
-- Collaboration best practices
-- Real-world Git workflows used in companies
-
-### Outcome
-
-Students will understand advanced Git workflows and apply industry-level best practices in professional projects.
+By the end you will be able to:
+- Explain version control to a non-technical person
+- Use Git confidently for daily development
+- Collaborate on GitHub (branches, PRs, reviews)
+- Handle merge conflicts without panic
+- Recover from "I think I broke everything" moments
+- Follow industry-standard team workflows
 
 ---
 
-## Tools Used
+## The 10 commands you'll use 90% of the time
 
-- Git Bash
-- Git CLI
-- GitHub Platform
-- Visual Studio Code (Optional)
-
----
-
-## Course Methodology
-
-- Concept-driven teaching
-- Live demonstrations
-- Hands-on lab sessions
-- Real project simulations
-- Assignment-based learning
-- Industry workflow practice
+| Command | Plain-English meaning |
+|---|---|
+| `git init` | Start tracking this folder |
+| `git status` | What's changed right now? |
+| `git add <file>` | Put this change in the "to be saved" box |
+| `git commit -m "msg"` | Save a labelled snapshot |
+| `git log` | Show the history of snapshots |
+| `git branch` | List / create parallel work lines |
+| `git switch <branch>` | Move to another work line |
+| `git merge <branch>` | Combine another branch into this one |
+| `git pull` | Download + merge others' work |
+| `git push` | Upload your work to GitHub |
 
 ---
 
-## Final Outcome
-
-After completing this training, students will be able to:
-
-- Work confidently with Git and GitHub
-- Collaborate effectively in team environments
-- Apply advanced Git commands
-- Manage branching strategies professionally
-- Handle conflicts and rollbacks safely
-- Follow enterprise development workflows
-- Prepare for Git-related technical interviews
+## How to use this module
+1. **Do, don't just read.** Type every command yourself - muscle memory matters.
+2. **Open the animations** when a concept feels abstract.
+3. **Break things on purpose** in a throwaway folder, then recover them. That's where confidence comes from.
 
 ---
 
-Happy Learning 🚀
+Ready? Start with → [**Day 1: Git Fundamentals**](day1/readme.md)
+Next module → [**learn-terraform**](../learn-terraform)

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git Branching — Merge vs Rebase (Interactive)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3;
+    min-height:100vh;padding:22px;display:flex;flex-direction:column;align-items:center;}
+  h1{font-size:1.55rem;text-align:center;}
+  p.sub{color:#8b949e;max-width:700px;text-align:center;margin:6px 0 16px;}
+  .analogy{background:#161b22;border:1px solid #30363d;border-left:4px solid #a371f7;
+    border-radius:8px;padding:12px 16px;max-width:780px;font-size:.88rem;color:#c9d1d9;margin-bottom:18px;}
+  .analogy b{color:#a371f7;}
+  svg{background:#161b22;border:1px solid #30363d;border-radius:14px;width:min(860px,96vw);height:300px;}
+  .controls{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:18px 0 8px;max-width:860px;}
+  button{border:none;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;font-size:.83rem;}
+  button:active{transform:translateY(1px);} button:disabled{opacity:.4;cursor:not-allowed;}
+  .b-main{background:#1f6feb;color:#fff;} .b-branch{background:#a371f7;color:#fff;}
+  .b-fcommit{background:#db61a2;color:#fff;} .b-merge{background:#238636;color:#fff;}
+  .b-rebase{background:#bb8009;color:#fff;} .b-reset{background:#30363d;color:#e6edf3;}
+  button:hover:not(:disabled){filter:brightness(1.12);}
+  .explain{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px 18px;
+    max-width:780px;margin-top:12px;font-size:.9rem;line-height:1.55;color:#c9d1d9;}
+  .explain h3{font-size:1rem;margin-bottom:6px;color:#58a6ff;}
+  .pill{display:inline-block;font-size:.72rem;padding:2px 8px;border-radius:999px;margin-right:6px;}
+  .pill.main{background:#13315f;color:#79c0ff;} .pill.feat{background:#3c2a63;color:#d2b8ff;}
+</style>
+</head>
+<body>
+  <h1>🌿 Branching, Merge & Rebase — See the Difference</h1>
+  <p class="sub">Branches let many people work at once without stepping on each other. The hardest question — "merge or rebase?" — becomes obvious once you <i>see</i> it. Build a history below, then try both.</p>
+
+  <div class="analogy">
+    📖 <b>Analogy:</b> A branch is like writing a <b>chapter draft in a separate notebook</b> so you don't scribble over the published book.
+    <b>Merge</b> = staple both notebooks together with a note saying "combined here" (keeps the real timeline, adds a merge commit).
+    <b>Rebase</b> = neatly recopy your draft pages <i>onto the end</i> of the published book so it reads as one clean straight story (rewrites history).
+  </div>
+
+  <svg id="canvas" viewBox="0 0 860 300"></svg>
+
+  <div class="controls">
+    <button class="b-main" id="bMain">➕ Commit on main</button>
+    <button class="b-branch" id="bBranch">🌿 Create "feature" branch</button>
+    <button class="b-fcommit" id="bFeat" disabled>➕ Commit on feature</button>
+    <button class="b-merge" id="bMerge" disabled>🔀 Merge into main</button>
+    <button class="b-rebase" id="bRebase" disabled>📐 Rebase onto main</button>
+    <button class="b-reset" id="bReset">↻ Reset</button>
+  </div>
+
+  <div class="explain" id="explain">
+    <h3>👋 Start here</h3>
+    Click <b>Commit on main</b> a couple of times to build the trunk. Then create a feature branch, add commits to it, and meanwhile add another commit to main so the branches <i>diverge</i>. Now the fun part: try <b>Merge</b> (reset and) <b>Rebase</b> to compare.
+  </div>
+
+<script>
+  const svg=document.getElementById("canvas"),ns="http://www.w3.org/2000/svg";
+  const mainY=110, featY=210, startX=70, dx=95, r=20;
+  let main=[], feat=[], branched=false, mainAfterBranch=0;
+  const $=id=>document.getElementById(id);
+
+  function el(tag,attrs){const e=document.createElementNS(ns,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  function clear(){while(svg.firstChild)svg.removeChild(svg.firstChild);}
+
+  function node(x,y,color,label){
+    const g=el("g",{});
+    g.appendChild(el("circle",{cx:x,cy:y,r,fill:color,stroke:"#0d1117","stroke-width":3}));
+    const t=el("text",{x,y:y+5,"text-anchor":"middle","font-size":12,"font-weight":700,fill:"#fff"});
+    t.textContent=label;g.appendChild(t);svg.appendChild(g);
+  }
+  function edge(x1,y1,x2,y2,color){
+    svg.appendChild(el("line",{x1,y1,x2,y2,stroke:color||"#484f58","stroke-width":3}));
+  }
+  function tag(x,y,text,cls){
+    const fill=cls==="main"?"#1f6feb":"#a371f7";
+    const g=el("g",{});
+    g.appendChild(el("rect",{x:x-26,y:y-14,width:52,height:22,rx:6,fill:fill}));
+    const t=el("text",{x,y:y+1,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"#fff"});
+    t.textContent=text;g.appendChild(t);svg.appendChild(g);
+  }
+
+  function draw(){
+    clear();
+    // main line
+    let px=null,py=mainY;
+    main.forEach((c,i)=>{const x=startX+i*dx; if(px!==null)edge(px,mainY,x,mainY,"#1f6feb"); px=x;});
+    // feature line (branches from main at mainAfterBranch-1)
+    if(feat.length){
+      const baseX=startX+(mainAfterBranch-1)*dx;
+      let fx=baseX,fy=mainY;
+      feat.forEach((c,i)=>{const x=startX+(mainAfterBranch+i)*dx; edge(fx,fy,x,featY,"#a371f7"); fx=x;fy=featY;});
+    }
+    // nodes
+    main.forEach((c,i)=>node(startX+i*dx,mainY,c.merge?"#238636":"#1f6feb",c.label));
+    feat.forEach((c,i)=>node(startX+(mainAfterBranch+i)*dx,featY,"#a371f7",c.label));
+    // branch tags
+    if(main.length)tag(startX+(main.length-1)*dx,mainY-38,"main","main");
+    if(feat.length)tag(startX+(mainAfterBranch+feat.length-1)*dx,featY+38,"feature","feat");
+
+    $("bFeat").disabled=!branched;
+    $("bMerge").disabled=!(branched&&feat.length);
+    $("bRebase").disabled=!(branched&&feat.length);
+  }
+
+  let mc=0,fc=0;
+  $("bMain").onclick=()=>{mc++;main.push({label:"C"+mc});draw();
+    explain("Commit on main","main",`A new commit <b>C${mc}</b> is added to the <span class="pill main">main</span> trunk. Each commit is a permanent snapshot pointing back to its parent.`);};
+  $("bBranch").onclick=()=>{if(!main.length){$("bMain").click();}
+    branched=true;mainAfterBranch=main.length;draw();
+    explain("Create feature branch","feat",`A <span class="pill feat">feature</span> branch is created. It's just a movable pointer to the current commit — <b>creating a branch is instant and free</b> in Git. Now commit on it.`);};
+  $("bFeat").onclick=()=>{fc++;feat.push({label:"F"+fc});draw();
+    explain("Commit on feature","feat",`Commit <b>F${fc}</b> goes on the feature branch only — <span class="pill main">main</span> is untouched. This is how teams work in parallel safely. <br><br>👉 Tip: now add another <b>Commit on main</b> so the branches <i>diverge</i> — that's when merge vs rebase actually differ.`);};
+
+  $("bMerge").onclick=()=>{
+    // merge: move feature commits onto main timeline AND add a merge commit
+    const merged=feat.map(f=>({label:f.label}));
+    main=[...main,...merged,{label:"M",merge:true}];
+    feat=[];branched=false;mc=main.length;draw();
+    explain("🔀 Merge result","main",
+      `Git created a special <b style="color:#3fb950">merge commit (M)</b> that has <b>two parents</b> — it ties the two histories together. <br><br>
+      ✅ <b>Nothing is rewritten</b> — the true history (that work happened in parallel) is preserved.<br>
+      ⚠️ The graph has a "fork-and-join" shape; many merges make history look like a subway map.<br><br>
+      <b>Use merge for:</b> shared/public branches, and pull requests into <code>main</code>.`);
+  };
+
+  $("bRebase").onclick=()=>{
+    // rebase: replay feature commits linearly at the end of main, NO merge commit
+    const replayed=feat.map(f=>({label:f.label+"'"}));
+    main=[...main,...replayed];
+    feat=[];branched=false;mc=main.length;draw();
+    explain("📐 Rebase result","feat",
+      `The feature commits were <b>recreated</b> on top of main (notice <b>F1'</b> — they're new commits with new IDs). <br><br>
+      ✅ <b>Perfectly straight, linear history</b> — reads like one clean story, no merge commit.<br>
+      ⚠️ It <b>rewrites history</b> (new commit IDs). <b style="color:#f85149">Golden rule: never rebase commits you've already shared/pushed</b> — only clean up your own local branch.<br><br>
+      <b>Use rebase for:</b> tidying your local feature branch before opening a pull request.`);
+  };
+
+  $("bReset").onclick=()=>{main=[];feat=[];branched=false;mc=0;fc=0;mainAfterBranch=0;draw();
+    explain("👋 Start here","main","History cleared. Build it again and compare Merge vs Rebase.");};
+
+  function explain(title,cls,html){
+    $("explain").innerHTML=`<h3>${title}</h3>${html}`;
+  }
+
+  // seed
+  main=[{label:"C1"}];mc=1;draw();
+</script>
+</body>
+</html>
