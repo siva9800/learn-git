@@ -31,8 +31,8 @@ These make the trickiest ideas *click*. Open them and play:
 
 | Animation | What it teaches |
 |---|---|
-| [**Git's Three Trees**](animations/git-three-trees.html) | The single most important Git concept - how files move from *Working Directory → Staging → Repository*. A clickable simulator. |
-| [**Branching: Merge vs Rebase**](animations/git-branching.html) | Build a commit history visually, then *see* exactly how merge and rebase differ. |
+| [**Git's Three Trees**](https://siva9800.github.io/devops-animations/git/git-three-trees.html) | The single most important Git concept - how files move from *Working Directory → Staging → Repository*. A clickable simulator. |
+| [**Branching: Merge vs Rebase**](https://siva9800.github.io/devops-animations/git/git-branching.html) | Build a commit history visually, then *see* exactly how merge and rebase differ. |
 
 > Tip for class: project the Three-Trees simulator on screen and let students predict what each button does before you click.
 
