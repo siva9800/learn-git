@@ -271,4 +271,4 @@ You can now:
 - Tell fast-forward from three-way merges
 - Resolve a merge conflict calmly
 
-Next up → [**Day 3: Remote Repositories & GitHub**](../day3/readme.md)
+Next up → [**Day 3: Remote Repositories & GitHub**](../day3-remote-github/notes.md)

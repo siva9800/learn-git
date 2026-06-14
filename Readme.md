@@ -51,34 +51,34 @@ flowchart LR
     style D6 fill:#bb8009,color:#fff
 ```
 
-### [Day 1: Git Fundamentals](day1/readme.md) - *Foundation & Core Concepts*
+### [Day 1: Git Fundamentals](day1-fundamentals/notes.md) - *Foundation & Core Concepts*
 - What version control is (with analogies) • Git vs other systems
 - The **three-tree model** (working dir, staging, repository)
 - Essential commands: `init`, `add`, `commit`, `status`, `log`
 - Writing meaningful commit messages
 
-### [Day 2: Branching & Merging](day2/readme.md) - *Parallel Development*
+### [Day 2: Branching & Merging](day2-branching-merging/notes.md) - *Parallel Development*
 - What a branch really is (a movable sticky-note, not a copy!)
 - Creating/switching branches • fast-forward vs three-way merge
 - Resolving merge conflicts calmly • branch hygiene
 
-### [Day 3: Remote Repositories](day3/readme.md) - *Collaboration with GitHub*
+### [Day 3: Remote Repositories](day3-remote-github/notes.md) - *Collaboration with GitHub*
 - Local vs remote • `clone`, `push`, `pull`, `fetch`
 - `origin` vs `upstream` • HTTPS vs SSH authentication
 - *(Includes the real-world "Repository not found" / auth troubleshooting we all hit.)*
 
-### [Day 4: Advanced Git](day4/readme.md) - *Professional Workflows*
+### [Day 4: Advanced Git](day4-advanced-git/notes.md) - *Professional Workflows*
 - Pull requests & code review • forking & contributing
 - `stash`, `cherry-pick`, `revert` • **merge vs rebase** deep-dive
 - Squash commits • safe force-push (`--force-with-lease`)
-- See also: [revert deep-dive](day4/revert.md)
+- See also: [revert deep-dive](day4-advanced-git/revert.md)
 
-### [Day 5: Team Workflows](day5/readme.md) - *Enterprise Practices*
-- **GitHub Flow** vs **GitFlow** ([branching strategy detail](day5/branching-strategy.md))
+### [Day 5: Team Workflows](day5-branching-strategies/notes.md) - *Enterprise Practices*
+- **GitHub Flow** vs **GitFlow** ([branching strategy detail](day5-branching-strategies/branching-strategy.md))
 - Releases, hotfixes, tagging & versioning
 - CI/CD integration • repository hygiene
 
-### [Bonus: Git Power Tools](day6-power-tools/readme.md) - *Save Yourself in a Crisis*
+### [Bonus: Git Power Tools](day6-power-tools/notes.md) - *Save Yourself in a Crisis*
 - `git reflog` - the undo button for your undo button
 - `git bisect` - find the exact commit that broke things
 - `git hooks` - automate checks before every commit
@@ -122,5 +122,5 @@ By the end you will be able to:
 
 ---
 
-Ready? Start with → [**Day 1: Git Fundamentals**](day1/readme.md)
+Ready? Start with → [**Day 1: Git Fundamentals**](day1-fundamentals/notes.md)
 Next module → [**learn-terraform**](../learn-terraform)

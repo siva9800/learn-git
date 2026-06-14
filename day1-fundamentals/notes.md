@@ -291,7 +291,7 @@ git switch main      # (or: git checkout main)
 ```bash
 git revert <commit-id>
 ```
-This creates a **new** commit that reverses the bad one - your history stays honest and nothing is destroyed. (Full deep-dive in [Day 4 revert notes](../day4/revert.md).)
+This creates a **new** commit that reverses the bad one - your history stays honest and nothing is destroyed. (Full deep-dive in [Day 4 revert notes](../day4-advanced-git/revert.md).)
 
 ---
 
@@ -304,7 +304,7 @@ This creates a **new** commit that reverses the bad one - your history stays hon
 | Undo the last commit but **keep** the changes | `git reset --soft HEAD~1` | Removes the commit, keeps your work staged |
 
 > [!WARNING]
-> `git reset --hard` throws away changes **permanently**. Only use it when you're 100% sure. (And remember: even then, [`git reflog`](../day6-power-tools/readme.md) can often save you.)
+> `git reset --hard` throws away changes **permanently**. Only use it when you're 100% sure. (And remember: even then, [`git reflog`](../day6-power-tools/notes.md) can often save you.)
 
 ---
 
@@ -355,4 +355,4 @@ You can now:
 - Understand the three trees & HEAD
 - Roll back and undo safely
 
-Next up → [**Day 2: Branching & Parallel Development**](../day2/readme.md)
+Next up → [**Day 2: Branching & Parallel Development**](../day2-branching-merging/notes.md)

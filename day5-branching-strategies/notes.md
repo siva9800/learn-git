@@ -236,5 +236,5 @@ You can now:
 - Understand Git's role in CI/CD
 - Keep repositories clean and protected
 
-**You've finished the core 5 days!** Don't miss the → [**Bonus: Git Power Tools**](../day6-power-tools/readme.md) (reflog, bisect, hooks).
+**You've finished the core 5 days!** Don't miss the → [**Bonus: Git Power Tools**](../day6-power-tools/notes.md) (reflog, bisect, hooks).
 Then continue to → [`learn-docker`](../../learn-docker).

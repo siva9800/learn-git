@@ -1,6 +1,6 @@
 # Git Revert - Complete Guide
 
-> A focused deep-dive from [Day 4](readme.md). `git revert` is the **safe undo button** you'll reach for on shared/production branches.
+> A focused deep-dive from [Day 4](notes.md). `git revert` is the **safe undo button** you'll reach for on shared/production branches.
 
 ---
 
@@ -127,4 +127,4 @@ No force-push, no lost history, full audit trail of what broke and when it was f
 ## Summary
 `git revert` is your **safe undo button**: it cancels a change by adding a new commit, never rewrites history, and is the correct tool for anything already shared or in production.
 
-Back to → [Day 4](readme.md) • Recovery tools → [Power Tools: reflog, bisect](../day6-power-tools/readme.md)
+Back to → [Day 4](notes.md) • Recovery tools → [Power Tools: reflog, bisect](../day6-power-tools/notes.md)

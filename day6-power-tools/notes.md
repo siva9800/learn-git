@@ -185,7 +185,7 @@ git config --global core.editor "code --wait"  # use VS Code for messages
 | "Stop me committing secrets/TODOs" | `pre-commit` **hook** |
 | "Need to switch branches but I'm mid-work" | `git stash` |
 | "One file has two unrelated changes" | `git add -p` |
-| "Undo a commit that's already pushed" | `git revert <hash>` (see [Day 4 revert](../day4/revert.md)) |
+| "Undo a commit that's already pushed" | `git revert <hash>` (see [Day 4 revert](../day4-advanced-git/revert.md)) |
 | "Typing long commands is slow" | `git` **aliases** |
 
 ---

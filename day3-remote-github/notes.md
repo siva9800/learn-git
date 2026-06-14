@@ -253,4 +253,4 @@ You can now:
 - Understand `origin` vs `upstream`
 - Set up HTTPS/SSH auth and fix common errors
 
-Next up → [**Day 4: Advanced Git & Collaboration**](../day4/readme.md)
+Next up → [**Day 4: Advanced Git & Collaboration**](../day4-advanced-git/notes.md)

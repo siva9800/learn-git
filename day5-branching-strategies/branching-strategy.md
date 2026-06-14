@@ -1,6 +1,6 @@
 # GitFlow Branching Strategy - Deep Dive
 
-> A companion to [Day 5](readme.md). Here we break down **GitFlow** branch by branch, so you understand exactly how code flows from idea to production.
+> A companion to [Day 5](notes.md). Here we break down **GitFlow** branch by branch, so you understand exactly how code flows from idea to production.
 
 ---
 
@@ -113,7 +113,7 @@ flowchart TB
 
 ## When NOT to use GitFlow
 
-GitFlow shines for products with **scheduled, versioned releases** (mobile apps, desktop software, enterprise products). For a web app you deploy many times a day, it's usually **too heavy** - prefer **GitHub Flow** (one `main` + short feature branches) covered in [Day 5](readme.md).
+GitFlow shines for products with **scheduled, versioned releases** (mobile apps, desktop software, enterprise products). For a web app you deploy many times a day, it's usually **too heavy** - prefer **GitHub Flow** (one `main` + short feature branches) covered in [Day 5](notes.md).
 
 ---
 
@@ -126,4 +126,4 @@ GitFlow shines for products with **scheduled, versioned releases** (mobile apps,
 
 ---
 
-Back to → [Day 5](readme.md) • Don't miss → [Git Power Tools](../day6-power-tools/readme.md)
+Back to → [Day 5](notes.md) • Don't miss → [Git Power Tools](../day6-power-tools/notes.md)

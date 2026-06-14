@@ -72,7 +72,7 @@ flowchart LR
 
 **Fork workflow:** `Fork → Clone → Branch → Commit → Push → Pull Request`
 
-> See [Day 3](../day3/readme.md) for `origin` (your fork) vs `upstream` (the original) remotes.
+> See [Day 3](../day3-remote-github/notes.md) for `origin` (your fork) vs `upstream` (the original) remotes.
 
 ---
 
@@ -168,7 +168,7 @@ git switch main    # handle the urgent thing
 git switch feature
 git stash pop      # bring your work back exactly as it was
 ```
-More in the [Power Tools lesson](../day6-power-tools/readme.md).
+More in the [Power Tools lesson](../day6-power-tools/notes.md).
 
 ---
 
@@ -310,5 +310,5 @@ You can now:
 - Use stash, revert, cherry-pick
 - Resolve conflicts, squash commits, and force-push safely
 
-Next up → [**Day 5: Branching Strategies & Best Practices**](../day5/readme.md)
+Next up → [**Day 5: Branching Strategies & Best Practices**](../day5-branching-strategies/notes.md)
 Deeper on undo → [**revert.md**](revert.md)
