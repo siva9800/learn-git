@@ -91,6 +91,8 @@ You can use Git completely offline. GitHub is just one popular place to put your
 
 > **One-liner:** *Git is the engine; GitHub is one of many garages you can park it in.*
 
+> **Do this now (30 seconds):** open [github.com](https://github.com) in a browser and just look around - that is where your work will live from Day 3 onwards. Do not create anything yet; for now you are only seeing the destination. We spend Days 1-2 learning the engine (Git, on your own computer) so that when we drive to the garage (GitHub) on Day 3, everything makes sense.
+
 ---
 
 ## 3. Distributed Version Control (why Git is special)
