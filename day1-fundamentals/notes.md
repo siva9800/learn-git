@@ -21,14 +21,16 @@ By the end of this session, you will be able to:
 
 ## 1. What is Version Control? (Start here)
 
-### Analogy: the video-game save points
+### Analogy: Google Docs "Version History"
 
-When you play a video game, you **save** at checkpoints. If you make a mistake later, you reload the last save instead of restarting the whole game.
+Open any Google Doc, click **File → Version history**, and you can see *every* edit anyone ever made — who changed what, when, and you can restore any older version with one click.
 
-**Version control is a save system for your project files.** Every time you reach a good point, you "save" (called a **commit**). Later you can:
+Now imagine that same superpower for **your code, your designs, your configs — any file on your computer**. That is what version control gives you.
+
+**Version control is a time machine for your project files.** Every time you reach a good point, you "save" (called a **commit**). Later you can:
 - look back at every save,
 - see exactly what changed between saves,
-- and reload any earlier save if something breaks.
+- and jump back to any earlier save if something breaks — without losing the future.
 
 A **Version Control System (VCS)** is the tool that does this. It tracks:
 - **File changes** - what was added, edited, deleted
