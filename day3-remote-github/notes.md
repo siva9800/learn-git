@@ -106,21 +106,121 @@ git pull
 
 ---
 
-## 7. Fetch vs Pull (an important distinction)
+## 7. Fetch vs Pull - the deep version
+
+Both bring new work down from the remote. The difference is **what they do with it once it arrives**.
 
 ### Analogy
-- **`git fetch`** = the postman drops mail in your **mailbox**. You can see it arrived, but it's not opened/used yet. Safe.
-- **`git pull`** = the postman **opens the mail and merges it into your documents** immediately. Convenient, but can cause conflicts.
+- **`git fetch`** = the postman drops mail in your **mailbox**. It's arrived; nothing is opened or filed. Your desk (working tree) is untouched. Safe.
+- **`git pull`** = the postman drops the mail, **opens it, and files it into your folders** immediately. Convenient — but if you had a paper open on the same folder, you get a merge conflict.
 
-> **`pull` = `fetch` + `merge`**
+### What is actually happening inside `.git`
+
+For every branch on the remote, Git keeps a local **remote-tracking** copy under `refs/remotes/origin/`. Think of it as a cached snapshot of "what GitHub looked like the last time we synced."
+
+```
+        Your repo
+   ┌────────────────────────────────────────┐
+   │                                         │
+   │  main             ← your local branch   │
+   │                     (what you edit)     │
+   │                                         │
+   │  origin/main      ← cached mirror of    │
+   │                     the remote          │
+   │                     (read-only)         │
+   │                                         │
+   └────────────────────────────────────────┘
+```
+
+- **`git fetch`** updates *only* `origin/main` (and any other `origin/*`). Your local `main` does not move. You can inspect what arrived before deciding what to do with it.
+- **`git pull`** does `git fetch` AND THEN merges (or rebases) `origin/main` into your local `main`. In one step.
+
+> So: **`git pull` = `git fetch` + `git merge`** (by default).
+
+### Concrete walk-through
+
+You and a teammate both start from `main` pointing at commit `A`. The teammate pushes commit `B`.
+
+```
+   Before you sync                After teammate pushed (you don't know yet)
+
+   A ← main, origin/main          A - B ← origin/main on GitHub
+                                  │
+                                  ↑ your local main and origin/main
+                                    are both still pointing at A
+```
+
+You run `git fetch`:
+
+```
+   A - B ← origin/main        ← updated to match GitHub
+   │
+   ↑ main                     ← your local main is STILL at A
+                                Your working files did not change.
+```
+
+Now you can look without committing to anything:
+
+```bash
+git log A..origin/main         # exactly what's new
+git show origin/main           # see B's diff
+git diff main origin/main      # what changes await you
+```
+
+If you decide to take it, **either** merge:
+
+```bash
+git merge origin/main          # fast-forward main to B
+```
+
+…**or** rebase your local commits on top:
+
+```bash
+git rebase origin/main
+```
+
+Alternatively, do everything in one command:
+
+```bash
+git pull                       # = fetch + merge (default)
+git pull --rebase              # = fetch + rebase (linear history)
+```
+
+### Make `--rebase` your default (recommended)
+
+Most teams prefer linear history, no surprise merge commits:
+
+```bash
+git config --global pull.rebase true
+```
+
+Now plain `git pull` rebases for you.
+
+### When to reach for which
+
+| Situation | Command |
+|---|---|
+| "Is there anything new on the remote?" | `git fetch` |
+| "I'm starting work; get me the latest main" | `git pull` (clean tree) |
+| "I have local commits; bring in remote changes and keep history linear" | `git pull --rebase` |
+| "Someone may have force-pushed — I want to inspect first" | `git fetch`, then look |
+| "Something's weird, I need just the remote refs without touching my branches" | `git fetch --all --prune` |
+
+### Two safety habits
+
+1. **Never `git pull` on a dirty working tree.** Commit, or `git stash`, first. A pull that triggers a conflict in your uncommitted edits is unpleasant.
+2. **`git fetch --prune` periodically.** Removes local references to remote branches that have been deleted on GitHub — keeps `git branch -r` clean.
+
+### `fetch` vs `pull` cheat sheet
 
 | | **`git fetch`** | **`git pull`** |
 |---|---|---|
-| Downloads remote changes | | |
-| Merges into your branch | (you decide later) | automatically |
-| Safety | Very safe - nothing changes locally | Can trigger conflicts |
-
-> **Pro habit:** when unsure, `git fetch` first, inspect with `git log origin/main`, *then* merge.
+| Updates `origin/*` cached refs | ✅ | ✅ |
+| Touches your local branch | ❌ — your work is untouched | ✅ — merges or rebases into your branch |
+| Touches your working tree | ❌ | ✅ — files on disk may change |
+| Can trigger conflicts | ❌ | ✅ |
+| Safety | Always safe | Safe IF your tree is clean |
+| Use when | Inspecting, scripting, or unsure | Daily "get the latest" workflow |
 
 ---
 
@@ -134,28 +234,185 @@ This downloads all files **and** the full history, and automatically sets up `or
 
 ---
 
-## 9. `origin` vs `upstream` (open-source contributions)
+## 9. Contributing to an Open Source Project - step by step
 
-When you **fork** someone else's project (make your own copy on GitHub), you end up with two remotes:
+You don't have write access to most repos on the internet. So you can't just `git push` to them. The standard pattern is **fork → clone your fork → branch → push → Pull Request**.
 
-| Remote | Points to | Role |
-|---|---|---|
-| **`origin`** | *Your* fork | Where you push your work |
-| **`upstream`** | The *original* project | Where you pull the latest official changes |
+### The cast of characters
+
+| Name | What it is |
+|---|---|
+| **upstream** | The original project, e.g. `https://github.com/facebook/react.git` |
+| **your fork (origin)** | Your personal copy of upstream on GitHub, e.g. `https://github.com/you/react.git` |
+| **local clone** | The working copy on your laptop |
 
 ```mermaid
 flowchart LR
-    Upstream["upstream<br/>original project"] -- fork --> Origin["origin<br/>your fork"]
-    Origin -- clone --> Local["your laptop"]
-    Local -- push --> Origin
-    Upstream -- pull updates --> Local
+    UP["upstream<br/>facebook/react"] -- "fork (1)" --> ORIG["origin = your fork<br/>you/react"]
+    ORIG -- "clone (2)" --> LOCAL["your laptop"]
+    LOCAL -- "push (5)" --> ORIG
+    ORIG -- "Pull Request (6)" --> UP
+    UP -. "sync down (4)" .-> LOCAL
+    style UP fill:#1f6feb,color:#fff
+    style ORIG fill:#13351f,stroke:#3fb950,color:#fff
 ```
 
-Add upstream like this:
+### Step 0 - Pick a project and read CONTRIBUTING.md
+Every reasonable open-source project has a `CONTRIBUTING.md` (and often `CODE_OF_CONDUCT.md`). Read both. They tell you:
+- Branch naming convention (`feature/xxx`, `fix/issue-123`)
+- Commit message style (Conventional Commits, sign-off line / DCO)
+- Whether to open an issue before submitting a PR
+- Code style and required tests
+
+Skipping this is the #1 reason maintainers close PRs without review.
+
+### Step 1 - Fork the repo on GitHub
+On the project's GitHub page click the **Fork** button (top right). GitHub creates `https://github.com/<you>/<repo>` — a full copy you own and can push to.
+
+### Step 2 - Clone YOUR fork (not upstream)
 ```bash
-git remote add upstream https://github.com/original-owner/repo.git
-git pull upstream main      # get the latest official changes
+git clone https://github.com/<you>/<repo>.git
+cd <repo>
 ```
+After clone, your only remote is `origin` — and it points at *your fork*, not the original. Verify:
+```bash
+git remote -v
+# origin  https://github.com/<you>/<repo>.git (fetch)
+# origin  https://github.com/<you>/<repo>.git (push)
+```
+
+### Step 3 - Add `upstream` so you can pull in the project's latest changes
+```bash
+git remote add upstream https://github.com/<original-owner>/<repo>.git
+git remote -v
+# origin    https://github.com/<you>/<repo>.git              (fetch/push)
+# upstream  https://github.com/<original-owner>/<repo>.git   (fetch/push)
+```
+You will **fetch from `upstream`** but **push to `origin`**. (You can even block accidental pushes to upstream — see the advanced tip at the end.)
+
+### Step 4 - Create a feature branch off the latest upstream
+Always branch off a fresh `main`. Don't work directly on `main`.
+```bash
+git fetch upstream
+git switch -c fix/typo-in-readme upstream/main
+```
+Use the branch-naming convention from `CONTRIBUTING.md`: `fix/...`, `feat/...`, `docs/...`.
+
+### Step 5 - Make your changes and commit
+```bash
+# edit files
+git add README.md
+git commit -m "docs: fix typo in installation section"
+```
+Match the project's commit style. Many projects use **Conventional Commits** (`type(scope): message`).
+
+If the project uses **DCO sign-off**, add `-s`:
+```bash
+git commit -s -m "docs: fix typo"
+```
+
+### Step 6 - Keep your branch in sync with upstream
+If maintainers merged other PRs while you were working, pick up their changes before pushing:
+```bash
+git fetch upstream
+git rebase upstream/main
+# if conflicts:  fix them -> git add <file> -> git rebase --continue
+```
+Rebasing (not merging) keeps your PR clean — a straight chain of *your* commits on top of latest `main`. Reviewers love this.
+
+### Step 7 - Push your branch to your fork
+```bash
+git push -u origin fix/typo-in-readme
+```
+GitHub responds with a URL:
+> *Create a pull request for 'fix/typo-in-readme' on GitHub by visiting https://github.com/...*
+
+### Step 8 - Open the Pull Request
+Click that URL (or go to your fork → **Compare & pull request**). Two repositories appear:
+
+- **base repository** — the **original** project, branch `main` (where your change will go)
+- **head repository** — **your fork**, branch `fix/typo-in-readme` (where it comes from)
+
+Fill in:
+- **Title** — clear, often matching your commit message
+- **Description** — *what* the change does and *why*; link related issues with `Closes #1234`
+- Check off the project's PR checklist (tests, lint, changelog, signed-off)
+
+Submit. CI starts running.
+
+### Step 9 - Respond to review feedback
+A maintainer comments: *"Could you also update the FAQ?"*
+
+You make the change locally — **on the same branch** — and push again:
+```bash
+git add docs/FAQ.md
+git commit -m "docs: also fix the FAQ section"
+git push origin fix/typo-in-readme    # same branch -> the PR auto-updates
+```
+**Don't open a new PR.** Pushing to the same branch updates the existing PR.
+
+If they ask you to rebase or squash:
+```bash
+git fetch upstream
+git rebase -i upstream/main           # reorder, squash, edit messages
+git push --force-with-lease origin fix/typo-in-readme
+```
+Always `--force-with-lease`, not `--force`. The lease version refuses if someone else pushed to the branch in the meantime — saving you from overwriting their work.
+
+### Step 10 - After it's merged: clean up
+The maintainer clicks "Merge". Now sync everything:
+```bash
+git switch main
+git fetch upstream
+git merge --ff-only upstream/main             # fast-forward your local main
+git push origin main                          # update your fork's main
+git branch -d fix/typo-in-readme              # delete the branch locally
+git push origin --delete fix/typo-in-readme   # delete it on your fork
+```
+Your fork is clean. You're ready for the next contribution.
+
+### Full visual recap
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as You
+    participant F as Fork (origin)
+    participant L as Local clone
+    participant UP as Upstream
+    U->>UP: Click Fork on GitHub
+    UP-->>F: GitHub creates your copy
+    U->>L: git clone <your fork>
+    U->>L: git remote add upstream <original>
+    U->>L: git fetch upstream && git switch -c fix/x upstream/main
+    U->>L: edit, git commit
+    U->>L: git fetch upstream && git rebase upstream/main
+    U->>F: git push -u origin fix/x
+    U->>UP: Open Pull Request (head=fork/fix-x, base=upstream/main)
+    UP-->>U: Reviewer requests changes
+    U->>L: edit, git commit
+    U->>F: git push (same branch -> PR updates)
+    UP-->>U: PR merged
+    U->>L: sync main + delete branch
+```
+
+### Advanced tip - block accidental pushes to upstream
+A typo (`git push upstream`) could try to push to the original project (and fail with `Permission denied`, but it's still noisy). Disable it once:
+```bash
+git remote set-url --push upstream DISABLE
+```
+Any future `git push upstream ...` fails loudly with `fatal: 'DISABLE' does not appear to be a git repository`.
+
+### Common gotchas
+
+| Mistake | What goes wrong | Fix |
+|---|---|---|
+| Working directly on `main` of your fork | Hard to keep main in sync; future PRs get messy | Always `git switch -c <branch> upstream/main` |
+| Forgetting to rebase before opening the PR | Reviewers see conflicts; CI fails on stale base | `git fetch upstream && git rebase upstream/main` before pushing |
+| Letting your fork's `main` drift behind upstream | New branches start from old code | After every merge, sync your fork's main (Step 10) |
+| Opening a new PR instead of pushing more commits to the same branch | Reviewers lose all context and comments | Push to the same branch — the PR updates in place |
+| Using `git push --force` | Can silently overwrite a teammate's just-pushed commit | Always `git push --force-with-lease` |
+| Cloning upstream instead of your fork | You can't push your changes anywhere | Always clone *your fork* — that's the one you have write access to |
 
 ---
 
