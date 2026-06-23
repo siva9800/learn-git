@@ -86,6 +86,15 @@ flowchart LR
 
 ---
 
+## Standalone Guides
+
+| Guide | What it covers |
+|---|---|
+| [**Open Source Contribution Guide**](./open-source-contribution-guide.md) | The complete journey from "I want to contribute" to "trusted contributor." Finding projects, anatomy of a healthy repo, one-time setup, the full mechanical flow, writing PRs that get merged, handling review feedback, after-merge habits, failure recovery, and a 30-day starter plan. |
+| [**Interview Question Bank**](./interview-questions.md) | 120 Git/GitHub interview questions across 10 sections with concise study-friendly answers, tagged by difficulty (beginner → advanced). |
+
+---
+
 ## Learning Outcomes
 
 By the end you will be able to:
